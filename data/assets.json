@@ -1,0 +1,26 @@
+{
+  "assets": [
+    { "symbol": "NOVA", "name": "NOVA Protocol", "type": "crypto", "startPrice": 184.72, "spread": 0.003 },
+    { "symbol": "ETHRA", "name": "ETHRA Chain", "type": "crypto", "startPrice": 1320.15, "spread": 0.0025 },
+    { "symbol": "BITRIX", "name": "BITRIX Core", "type": "crypto", "startPrice": 24580.33, "spread": 0.002 },
+    { "symbol": "LUNEX", "name": "LUNEX Orbit", "type": "crypto", "startPrice": 42.18, "spread": 0.004 },
+
+    { "symbol": "AURX", "name": "AuroraX Industries", "type": "stock", "startPrice": 88.40, "spread": 0.0015 },
+    { "symbol": "NEXA", "name": "Nexa Systems", "type": "stock", "startPrice": 145.20, "spread": 0.0015 },
+    { "symbol": "VANT", "name": "Vantage Labs", "type": "stock", "startPrice": 63.75, "spread": 0.0015 },
+    { "symbol": "CYBR", "name": "CyberGrid Holdings", "type": "stock", "startPrice": 212.10, "spread": 0.0015 },
+
+    { "symbol": "TECHX", "name": "TechX Innovation ETF", "type": "etf", "startPrice": 120.50, "spread": 0.001 },
+    { "symbol": "DIVX", "name": "DivX Yield ETF", "type": "etf", "startPrice": 54.30, "spread": 0.001 },
+    { "symbol": "WORLDX", "name": "WorldX Global ETF", "type": "etf", "startPrice": 98.10, "spread": 0.001 },
+    { "symbol": "CRYPX", "name": "CrypX Digital ETF", "type": "etf", "startPrice": 76.80, "spread": 0.0015 },
+
+    { "symbol": "GOLD-X", "name": "GoldX Futures", "type": "commodity", "startPrice": 1920.40, "spread": 0.0015 },
+    { "symbol": "OIL-X", "name": "OilX Crude", "type": "commodity", "startPrice": 78.60, "spread": 0.0015 },
+    { "symbol": "SILVER-X", "name": "SilverX Contracts", "type": "commodity", "startPrice": 24.10, "spread": 0.0015 },
+
+    { "symbol": "USD/EUR-X", "name": "USD/EUR FX", "type": "forex", "startPrice": 0.92, "spread": 0.0005 },
+    { "symbol": "USD/JPY-X", "name": "USD/JPY FX", "type": "forex", "startPrice": 148.20, "spread": 0.0005 },
+    { "symbol": "GBP/USD-X", "name": "GBP/USD FX", "type": "forex", "startPrice": 1.28, "spread": 0.0005 }
+  ]
+}
