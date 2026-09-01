@@ -1,0 +1,40 @@
+{
+  "events": [
+    {
+      "title": "BREAKING — NOVA NETWORK ANNOUNCES MAJOR PROTOCOL UPGRADE",
+      "body": "NOVA developers reveal a throughput upgrade, sparking speculative flows across the crypto complex.",
+      "category": "Crypto",
+      "impact": "High"
+    },
+    {
+      "title": "PANIC — MAJOR EXCHANGE EXPERIENCES OUTAGE",
+      "body": "A top-tier fictional exchange halts withdrawals, causing spreads to widen and liquidity to evaporate.",
+      "category": "Systemic",
+      "impact": "Very High"
+    },
+    {
+      "title": "AURX REPORTS RECORD QUARTER",
+      "body": "AuroraX Industries beats expectations on revenue and margins, with analysts revising targets upward.",
+      "category": "Equities",
+      "impact": "Medium"
+    },
+    {
+      "title": "MACRO — SURPRISE RATE CUT BY CENTRAL AUTHORITY",
+      "body": "The fictional Macro Council cuts benchmark rates, boosting risk assets and weakening the synthetic USD.",
+      "category": "Macro",
+      "impact": "High"
+    },
+    {
+      "title": "VOLATILITY SPIKE IN CRYPX ETF",
+      "body": "Options markets price in elevated volatility for CrypX as flows rotate into high-beta digital assets.",
+      "category": "ETF",
+      "impact": "Medium"
+    },
+    {
+      "title": "COMMODITIES — OIL-X SUPPLY DISRUPTION",
+      "body": "Unexpected pipeline maintenance drives a short-term squeeze in OIL-X contracts.",
+      "category": "Commodities",
+      "impact": "Medium"
+    }
+  ]
+}
