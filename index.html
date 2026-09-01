@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MarketVerse: Zero to Titan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="mv-header">
+      <div class="mv-logo">MARKETVERSE: ZERO TO TITAN</div>
+      <div class="mv-header-right">
+        <span id="mv-clock"></span>
+        <span id="mv-level"></span>
+        <span id="mv-xp"></span>
+        <span id="mv-networth"></span>
+      </div>
+    </header>
+
+    <main class="mv-main">
+      <section class="mv-left">
+        <div class="mv-panel">
+          <h2>Assets</h2>
+          <div class="mv-asset-filters">
+            <button data-filter="all" class="mv-filter-btn mv-filter-active">All</button>
+            <button data-filter="crypto" class="mv-filter-btn">Crypto</button>
+            <button data-filter="stock" class="mv-filter-btn">Stocks</button>
+            <button data-filter="etf" class="mv-filter-btn">ETFs</button>
+            <button data-filter="commodity" class="mv-filter-btn">Commodities</button>
+            <button data-filter="forex" class="mv-filter-btn">Forex</button>
+          </div>
+          <table class="mv-table" id="mv-assets-table">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Change</th>
+                <th>Spread</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="mv-panel">
+          <h2>News & Events</h2>
+          <ul id="mv-news-feed" class="mv-news-feed"></ul>
+        </div>
+      </section>
+
+      <section class="mv-center">
+        <div class="mv-panel mv-chart-panel">
+          <div class="mv-chart-header">
+            <span id="mv-selected-asset"></span>
+            <span id="mv-regime"></span>
+            <span id="mv-volatility"></span>
+          </div>
+          <canvas id="mv-chart" width="800" height="400"></canvas>
+          <div class="mv-chart-controls">
+            <button data-tf="1m" class="mv-tf-btn mv-tf-active">1m</button>
+            <button data-tf="5m" class="mv-tf-btn">5m</button>
+            <button data-tf="15m" class="mv-tf-btn">15m</button>
+            <button data-tf="1h" class="mv-tf-btn">1h</button>
+          </div>
+        </div>
+
+        <div class="mv-panel mv-order-panel">
+          <h2>Order Ticket</h2>
+          <form id="mv-order-form">
+            <div class="mv-form-row">
+              <label>Side</label>
+              <select id="mv-order-side">
+                <option value="buy">BUY</option>
+                <option value="sell">SELL</option>
+              </select>
+            </div>
+            <div class="mv-form-row">
+              <label>Order Type</label>
+              <select id="mv-order-type">
+                <option value="market">Market</option>
+                <option value="limit">Limit</option>
+                <option value="stop">Stop</option>
+              </select>
+            </div>
+            <div class="mv-form-row">
+              <label>Quantity</label>
+              <input type="number" id="mv-order-qty" min="0" step="1" value="100" />
+            </div>
+            <div class="mv-form-row">
+              <label>Limit/Stop Price</label>
+              <input type="number" id="mv-order-price" step="0.01" />
+            </div>
+            <div class="mv-form-row">
+              <label>Leverage</label>
+              <select id="mv-order-leverage">
+                <option value="1">1x</option>
+                <option value="2">2x</option>
+                <option value="5">5x</option>
+                <option value="10">10x</option>
+              </select>
+            </div>
+            <div class="mv-form-row">
+              <label>Stop Loss</label>
+              <input type="number" id="mv-order-sl" step="0.01" />
+            </div>
+            <div class="mv-form-row">
+              <label>Take Profit</label>
+              <input type="number" id="mv-order-tp" step="0.01" />
+            </div>
+            <div class="mv-order-summary">
+              <div>Est. Cost: <span id="mv-order-cost">$0</span></div>
+              <div>Fee: <span id="mv-order-fee">$0</span></div>
+              <div>Buying Power: <span id="mv-buying-power">$0</span></div>
+            </div>
+            <button type="submit" class="mv-btn-primary">EXECUTE ORDER</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="mv-right">
+        <div class="mv-panel">
+          <h2>Portfolio</h2>
+          <div class="mv-portfolio-summary">
+            <div>Cash: <span id="mv-cash"></span></div>
+            <div>Equity: <span id="mv-equity"></span></div>
+            <div>Margin Used: <span id="mv-margin-used"></span></div>
+            <div>Maintenance Margin: <span id="mv-maint-margin"></span></div>
+          </div>
+          <table class="mv-table" id="mv-positions-table">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Side</th>
+                <th>Qty</th>
+                <th>Entry</th>
+                <th>Last</th>
+                <th>Unrealized P&L</th>
+                <th>Leverage</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="mv-panel">
+          <h2>Order History</h2>
+          <table class="mv-table" id="mv-orders-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Symbol</th>
+                <th>Side</th>
+                <th>Type</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/market.js"></script>
+  <script src="js/portfolio.js"></script>
+  <script src="js/orders.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/news.js"></script>
+  <script src="js/sounds.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
