@@ -2,167 +2,175 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MarketVerse: Zero to Titan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <meta name="description" content="MarketVerse: Zero to Titan — a high-energy market simulation game." />
+  <title>MarketVerse // Zero to Titan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div id="app">
     <header class="mv-header">
-      <div class="mv-logo">MARKETVERSE: ZERO TO TITAN</div>
+      <div class="mv-brand">
+        <div class="mv-logo-mark">MV</div>
+        <div>
+          <div class="mv-logo">MARKETVERSE</div>
+          <div class="mv-sublogo">ZERO TO TITAN · PAPER TRADING LAB</div>
+        </div>
+      </div>
+      <div class="mv-header-center">
+        <span class="mv-live-pill"><i></i> LIVE SIMULATION</span>
+        <span id="mv-market-status">MARKET OPEN</span>
+      </div>
       <div class="mv-header-right">
-        <span id="mv-clock"></span>
-        <span id="mv-level"></span>
-        <span id="mv-xp"></span>
-        <span id="mv-networth"></span>
+        <button id="mv-sound-toggle" class="mv-icon-btn" type="button" title="Toggle sound">🔊</button>
+        <span id="mv-clock">--:--:--</span>
+        <span id="mv-level">LEVEL 1</span>
+        <span id="mv-xp">XP 0/100</span>
+        <span id="mv-networth">$100,000.00</span>
       </div>
     </header>
 
+    <div class="mv-ticker" id="mv-ticker"></div>
+
     <main class="mv-main">
-      <section class="mv-left">
-        <div class="mv-panel">
-          <h2>Assets</h2>
-          <div class="mv-asset-filters">
+      <aside class="mv-left">
+        <section class="mv-panel mv-market-panel">
+          <div class="mv-panel-heading">
+            <div>
+              <div class="mv-kicker">MARKET RADAR</div>
+              <h2>Assets</h2>
+            </div>
+            <span class="mv-live-dot"></span>
+          </div>
+          <div class="mv-asset-filters" role="tablist" aria-label="Asset filters">
             <button data-filter="all" class="mv-filter-btn mv-filter-active">All</button>
             <button data-filter="crypto" class="mv-filter-btn">Crypto</button>
             <button data-filter="stock" class="mv-filter-btn">Stocks</button>
             <button data-filter="etf" class="mv-filter-btn">ETFs</button>
-            <button data-filter="commodity" class="mv-filter-btn">Commodities</button>
-            <button data-filter="forex" class="mv-filter-btn">Forex</button>
+            <button data-filter="commodity" class="mv-filter-btn">Commod.</button>
+            <button data-filter="forex" class="mv-filter-btn">FX</button>
           </div>
-          <table class="mv-table" id="mv-assets-table">
-            <thead>
-              <tr>
-                <th>Symbol</th>
-                <th>Type</th>
-                <th>Price</th>
-                <th>Change</th>
-                <th>Spread</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+          <label class="mv-search-wrap">
+            <span>⌕</span>
+            <input id="mv-asset-search" type="search" placeholder="Search symbol or name..." autocomplete="off" />
+          </label>
+          <div class="mv-table-wrap">
+            <table class="mv-table mv-assets-table" id="mv-assets-table">
+              <thead><tr><th>Asset</th><th>Last</th><th>24h</th><th>Spread</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
 
-        <div class="mv-panel">
-          <h2>News & Events</h2>
+        <section class="mv-panel mv-news-panel">
+          <div class="mv-panel-heading">
+            <div><div class="mv-kicker">INTELLIGENCE</div><h2>News Feed</h2></div>
+            <span class="mv-news-count" id="mv-news-count">0</span>
+          </div>
           <ul id="mv-news-feed" class="mv-news-feed"></ul>
-        </div>
-      </section>
+        </section>
+      </aside>
 
       <section class="mv-center">
-        <div class="mv-panel mv-chart-panel">
-          <div class="mv-chart-header">
-            <span id="mv-selected-asset"></span>
-            <span id="mv-regime"></span>
-            <span id="mv-volatility"></span>
+        <section class="mv-panel mv-chart-panel">
+          <div class="mv-chart-top">
+            <div class="mv-selected-block">
+              <span class="mv-kicker">FOCUS MARKET</span>
+              <div class="mv-symbol-row"><span id="mv-selected-asset">Loading...</span><span id="mv-price-badge">—</span></div>
+              <div class="mv-chart-meta"><span id="mv-regime">Regime: Sideways</span><span id="mv-volatility">Volatility: 1.50%</span></div>
+            </div>
+            <div class="mv-regime-card" id="mv-regime-card">
+              <span class="mv-regime-label">REGIME</span>
+              <strong id="mv-regime-big">SIDEWAYS</strong>
+              <span id="mv-regime-hint">Balanced flow</span>
+            </div>
           </div>
-          <canvas id="mv-chart" width="800" height="400"></canvas>
-          <div class="mv-chart-controls">
-            <button data-tf="1m" class="mv-tf-btn mv-tf-active">1m</button>
-            <button data-tf="5m" class="mv-tf-btn">5m</button>
-            <button data-tf="15m" class="mv-tf-btn">15m</button>
-            <button data-tf="1h" class="mv-tf-btn">1h</button>
+          <div class="mv-chart-container"><canvas id="mv-chart" width="1200" height="520"></canvas><div id="mv-chart-crosshair" class="mv-crosshair" hidden></div></div>
+          <div class="mv-chart-footer">
+            <div class="mv-chart-controls">
+              <button data-tf="1m" class="mv-tf-btn mv-tf-active">1m</button>
+              <button data-tf="5m" class="mv-tf-btn">5m</button>
+              <button data-tf="15m" class="mv-tf-btn">15m</button>
+              <button data-tf="1h" class="mv-tf-btn">1h</button>
+            </div>
+            <div class="mv-chart-stats"><span>VOL <b id="mv-volume">—</b></span><span>HIGH <b id="mv-high">—</b></span><span>LOW <b id="mv-low">—</b></span></div>
           </div>
-        </div>
+        </section>
 
-        <div class="mv-panel mv-order-panel">
-          <h2>Order Ticket</h2>
-          <form id="mv-order-form">
-            <div class="mv-form-row">
-              <label>Side</label>
-              <select id="mv-order-side">
-                <option value="buy">BUY</option>
-                <option value="sell">SELL</option>
-              </select>
+        <section class="mv-command-grid">
+          <div class="mv-panel mv-order-panel">
+            <div class="mv-panel-heading">
+              <div><div class="mv-kicker">EXECUTION DESK</div><h2>Order Ticket</h2></div>
+              <span id="mv-order-mode" class="mv-mode-pill">MARKET</span>
             </div>
-            <div class="mv-form-row">
-              <label>Order Type</label>
-              <select id="mv-order-type">
-                <option value="market">Market</option>
-                <option value="limit">Limit</option>
-                <option value="stop">Stop</option>
-              </select>
+            <form id="mv-order-form">
+              <div class="mv-side-toggle">
+                <label><input type="radio" name="side" value="buy" checked /><span>BUY / LONG</span></label>
+                <label><input type="radio" name="side" value="sell" /><span>SELL / SHORT</span></label>
+              </div>
+              <div class="mv-form-grid">
+                <div class="mv-form-row"><label for="mv-order-type">Type</label><select id="mv-order-type"><option value="market">Market</option><option value="limit">Limit</option><option value="stop">Stop</option></select></div>
+                <div class="mv-form-row"><label for="mv-order-qty">Quantity</label><input type="number" id="mv-order-qty" min="0.01" step="0.01" value="10" /></div>
+                <div class="mv-form-row"><label for="mv-order-price">Trigger / Limit</label><input type="number" id="mv-order-price" step="0.01" placeholder="Auto" /></div>
+                <div class="mv-form-row"><label for="mv-order-leverage">Leverage</label><select id="mv-order-leverage"><option value="1">1x</option><option value="2">2x</option><option value="5">5x</option><option value="10">10x</option></select></div>
+                <div class="mv-form-row"><label for="mv-order-sl">Stop Loss</label><input type="number" id="mv-order-sl" step="0.01" placeholder="Optional" /></div>
+                <div class="mv-form-row"><label for="mv-order-tp">Take Profit</label><input type="number" id="mv-order-tp" step="0.01" placeholder="Optional" /></div>
+              </div>
+              <div class="mv-order-summary">
+                <div><span>Notional</span><b id="mv-order-cost">$0.00</b></div>
+                <div><span>Est. fee</span><b id="mv-order-fee">$0.00</b></div>
+                <div><span>Buying power</span><b id="mv-buying-power">$0.00</b></div>
+              </div>
+              <button type="submit" class="mv-btn-primary"><span>EXECUTE ORDER</span><kbd>ENTER</kbd></button>
+              <div class="mv-hotkeys">HOTKEYS: <kbd>B</kbd> BUY <kbd>S</kbd> SELL <kbd>R</kbd> RESET</div>
+            </form>
+          </div>
+
+          <div class="mv-panel mv-metrics-panel">
+            <div class="mv-panel-heading"><div><div class="mv-kicker">TRADER HUD</div><h2>Performance</h2></div></div>
+            <div class="mv-metric-grid">
+              <div class="mv-metric"><span>REALIZED P&L</span><strong id="mv-realized">$0.00</strong></div>
+              <div class="mv-metric"><span>UNREALIZED P&L</span><strong id="mv-unrealized">$0.00</strong></div>
+              <div class="mv-metric"><span>WIN RATE</span><strong id="mv-winrate">0%</strong></div>
+              <div class="mv-metric"><span>TRADES</span><strong id="mv-trades">0</strong></div>
             </div>
-            <div class="mv-form-row">
-              <label>Quantity</label>
-              <input type="number" id="mv-order-qty" min="0" step="1" value="100" />
-            </div>
-            <div class="mv-form-row">
-              <label>Limit/Stop Price</label>
-              <input type="number" id="mv-order-price" step="0.01" />
-            </div>
-            <div class="mv-form-row">
-              <label>Leverage</label>
-              <select id="mv-order-leverage">
-                <option value="1">1x</option>
-                <option value="2">2x</option>
-                <option value="5">5x</option>
-                <option value="10">10x</option>
-              </select>
-            </div>
-            <div class="mv-form-row">
-              <label>Stop Loss</label>
-              <input type="number" id="mv-order-sl" step="0.01" />
-            </div>
-            <div class="mv-form-row">
-              <label>Take Profit</label>
-              <input type="number" id="mv-order-tp" step="0.01" />
-            </div>
-            <div class="mv-order-summary">
-              <div>Est. Cost: <span id="mv-order-cost">$0</span></div>
-              <div>Fee: <span id="mv-order-fee">$0</span></div>
-              <div>Buying Power: <span id="mv-buying-power">$0</span></div>
-            </div>
-            <button type="submit" class="mv-btn-primary">EXECUTE ORDER</button>
-          </form>
-        </div>
+            <div class="mv-progress-block"><div><span>ROAD TO TITAN</span><b id="mv-progress-label">Level 1</b></div><div class="mv-progress"><i id="mv-level-progress"></i></div></div>
+            <div class="mv-prompt" id="mv-prompt"><span>◈</span><p>Analyze the tape. Find an edge. Build your empire.</p></div>
+          </div>
+        </section>
       </section>
 
-      <section class="mv-right">
-        <div class="mv-panel">
-          <h2>Portfolio</h2>
+      <aside class="mv-right">
+        <section class="mv-panel mv-portfolio-panel">
+          <div class="mv-panel-heading"><div><div class="mv-kicker">CAPITAL CONTROL</div><h2>Portfolio</h2></div><span class="mv-account-tag">SIM</span></div>
+          <div class="mv-equity-hero"><span>ACCOUNT EQUITY</span><strong id="mv-equity-hero">$100,000.00</strong><span id="mv-equity-change" class="mv-positive">+$0.00</span></div>
           <div class="mv-portfolio-summary">
-            <div>Cash: <span id="mv-cash"></span></div>
-            <div>Equity: <span id="mv-equity"></span></div>
-            <div>Margin Used: <span id="mv-margin-used"></span></div>
-            <div>Maintenance Margin: <span id="mv-maint-margin"></span></div>
+            <div><span>Cash</span><b id="mv-cash">$100,000.00</b></div>
+            <div><span>Margin Used</span><b id="mv-margin-used">$0.00</b></div>
+            <div><span>Maint. Margin</span><b id="mv-maint-margin">$0.00</b></div>
           </div>
-          <table class="mv-table" id="mv-positions-table">
-            <thead>
-              <tr>
-                <th>Symbol</th>
-                <th>Side</th>
-                <th>Qty</th>
-                <th>Entry</th>
-                <th>Last</th>
-                <th>Unrealized P&L</th>
-                <th>Leverage</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+          <div class="mv-section-label">OPEN POSITIONS</div>
+          <div class="mv-table-wrap mv-positions-wrap"><table class="mv-table" id="mv-positions-table"><thead><tr><th>Asset</th><th>Qty</th><th>P&L</th></tr></thead><tbody></tbody></table></div>
+        </section>
 
-        <div class="mv-panel">
-          <h2>Order History</h2>
-          <table class="mv-table" id="mv-orders-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Symbol</th>
-                <th>Side</th>
-                <th>Type</th>
-                <th>Qty</th>
-                <th>Price</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
+        <section class="mv-panel mv-orders-panel">
+          <div class="mv-panel-heading"><div><div class="mv-kicker">ACTIVITY</div><h2>Order History</h2></div><button id="mv-clear-orders" class="mv-text-btn" type="button">CLEAR</button></div>
+          <div class="mv-table-wrap"><table class="mv-table" id="mv-orders-table"><thead><tr><th>Time</th><th>Side</th><th>Qty</th><th>Fill</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+        </section>
+
+        <section class="mv-panel mv-achievement-panel">
+          <div class="mv-panel-heading"><div><div class="mv-kicker">PROGRESSION</div><h2>Milestones</h2></div></div>
+          <div id="mv-achievements" class="mv-achievements"></div>
+        </section>
+      </aside>
     </main>
+
+    <div id="mv-toast-stack" class="mv-toast-stack" aria-live="polite"></div>
+    <div id="mv-levelup" class="mv-levelup" hidden><div class="mv-levelup-card"><span>ASCENSION</span><strong>LEVEL <b id="mv-levelup-num">2</b></strong><p>Your trading rank just increased.</p><button id="mv-levelup-close" class="mv-btn-primary" type="button">CONTINUE</button></div></div>
   </div>
 
   <script src="js/market.js"></script>
