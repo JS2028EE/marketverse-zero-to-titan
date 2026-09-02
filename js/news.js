@@ -1,31 +1,32 @@
-// News/events feed
-
+// News/event feed with impact-aware presentation.
 const NewsEngine = (() => {
   let events = [];
   let feedEl;
+  let count = 0;
 
   function loadEvents() {
     return fetch("data/events.json")
-      .then((r) => r.json())
-      .then((data) => {
-        events = data.events;
-      });
+      .then((r) => { if (!r.ok) throw new Error("Events could not be loaded"); return r.json(); })
+      .then((data) => { events = Array.isArray(data.events) ? data.events : []; });
   }
 
   function init() {
     feedEl = document.getElementById("mv-news-feed");
-    setInterval(spawnRandomEvent, 8000);
+    // Seed the tape so the interface is alive immediately.
+    for (let i = 0; i < Math.min(3, events.length); i++) spawnRandomEvent();
+    setInterval(spawnRandomEvent, 7000);
   }
 
   function spawnRandomEvent() {
-    if (!events.length) return;
+    if (!events.length || !feedEl) return;
     const ev = events[Math.floor(Math.random() * events.length)];
     renderEvent(ev);
   }
 
   function renderEvent(ev) {
     const li = document.createElement("li");
-    li.className = "mv-news-item";
+    const impact = String(ev.impact || "low").toLowerCase().replace(/\s+/g, "-");
+    li.className = `mv-news-item mv-news-item-${impact}`;
 
     const title = document.createElement("div");
     title.className = "mv-news-item-title";
@@ -37,20 +38,15 @@ const NewsEngine = (() => {
 
     const tag = document.createElement("div");
     tag.className = "mv-news-item-tag";
-    tag.textContent = `[${ev.category}] Impact: ${ev.impact}`;
+    tag.textContent = `${String(ev.category || "MARKET").toUpperCase()} · IMPACT ${String(ev.impact || "Low").toUpperCase()}`;
 
-    li.appendChild(title);
-    li.appendChild(body);
-    li.appendChild(tag);
-
+    li.append(title, body, tag);
     feedEl.prepend(li);
-    while (feedEl.children.length > 20) {
-      feedEl.removeChild(feedEl.lastChild);
-    }
+    count += 1;
+    const countEl = document.getElementById("mv-news-count");
+    if (countEl) countEl.textContent = Math.min(count, 99);
+    while (feedEl.children.length > 24) feedEl.removeChild(feedEl.lastChild);
   }
 
-  return {
-    loadEvents,
-    init
-  };
+  return { loadEvents, init };
 })();
