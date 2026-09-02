@@ -11,15 +11,9 @@ const Portfolio = (() => {
   let winningTrades = 0;
 
   function getPosition(symbol) { return positions.find((p) => p.symbol === symbol); }
-
   function getMarketPrice(symbol) {
     const hist = MarketVerse.getHistory(symbol);
     return hist.length ? hist[hist.length - 1].close : null;
-  }
-
-  function upsertPosition(pos) {
-    const idx = positions.findIndex((p) => p.symbol === pos.symbol);
-    if (idx === -1) positions.push(pos); else positions[idx] = pos;
   }
 
   function computeUnrealized() {
@@ -31,40 +25,27 @@ const Portfolio = (() => {
     }, 0);
   }
 
-  function computeEquity() { return cash + realizedPnL + computeUnrealized(); }
-
+  // Cash already contains returned collateral and realized gains/losses, while unrealized P&L is still floating.
+  function computeEquity() { return cash + computeUnrealized(); }
   function computeMarginUsed() {
     return positions.reduce((used, p) => {
       const last = getMarketPrice(p.symbol) || p.entry;
       return used + (last * p.qty) / Math.max(1, p.leverage);
     }, 0);
   }
-
   function computeMaintMargin() { return computeMarginUsed() * MAINT_MARGIN_RATIO; }
   function canOpen(notional, leverage) { return notional / Math.max(1, leverage) <= computeEquity() * 0.8; }
-
-  function realizeForPosition(p, closeQty, closePrice) {
-    const diff = p.side === "long" ? closePrice - p.entry : p.entry - closePrice;
-    const pnl = diff * closeQty * p.leverage;
-    realizedPnL += pnl;
-    closedTrades += 1;
-    if (pnl > 0) winningTrades += 1;
-    return pnl;
-  }
 
   function applyTrade(order, fillPrice) {
     const qty = Number(order.qty);
     const leverage = Math.max(1, Number(order.leverage) || 1);
-    if (!Number.isFinite(qty) || qty <= 0 || !Number.isFinite(fillPrice) || fillPrice <= 0) {
-      return { ok: false, reason: "Invalid order" };
-    }
+    if (!Number.isFinite(qty) || qty <= 0 || !Number.isFinite(fillPrice) || fillPrice <= 0) return { ok: false, reason: "Invalid order" };
 
     const requestedSide = order.side === "buy" ? "long" : "short";
     const existing = getPosition(order.symbol);
     const notional = fillPrice * qty;
     const fee = notional * FEE_RATE;
 
-    // Same direction adds to the position. Opposite direction closes first, then reverses if needed.
     if (existing && existing.side === requestedSide) {
       if (!canOpen(notional, leverage)) return { ok: false, reason: "Insufficient margin" };
       const totalQty = existing.qty + qty;
@@ -79,14 +60,16 @@ const Portfolio = (() => {
 
     if (existing && existing.side !== requestedSide) {
       const closeQty = Math.min(existing.qty, qty);
-      const pnl = realizeForPosition(existing, closeQty, fillPrice);
-      const closeNotional = fillPrice * closeQty;
-      cash += closeNotional / existing.leverage;
+      const diff = existing.side === "long" ? fillPrice - existing.entry : existing.entry - fillPrice;
+      const pnl = diff * closeQty * existing.leverage;
+      const returnedCollateral = (existing.entry * closeQty) / existing.leverage;
+      cash += returnedCollateral + pnl;
+      realizedPnL += pnl;
+      closedTrades += 1;
+      if (pnl > 0) winningTrades += 1;
       existing.qty -= closeQty;
 
-      if (existing.qty <= 1e-9) {
-        positions = positions.filter((p) => p !== existing);
-      }
+      if (existing.qty <= 1e-9) positions = positions.filter((p) => p !== existing);
 
       const remaining = qty - closeQty;
       if (remaining <= 1e-9) {
@@ -107,8 +90,7 @@ const Portfolio = (() => {
         stopLoss: order.stopLoss ?? null,
         takeProfit: order.takeProfit ?? null
       });
-      cash -= (fillPrice * remaining) / leverage;
-      cash -= fee;
+      cash -= (fillPrice * remaining) / leverage + fee;
       return { ok: true, fee, pnl, action: "reversed" };
     }
 
@@ -127,20 +109,17 @@ const Portfolio = (() => {
     return { ok: true, fee, action: "opened" };
   }
 
-  function checkLiquidations() {
-    const equity = computeEquity();
-    const maint = computeMaintMargin();
-    if (positions.length && equity < maint) {
-      const snapshot = positions.slice();
-      snapshot.forEach((p) => {
-        const last = getMarketPrice(p.symbol) || p.entry;
-        realizeForPosition(p, p.qty, last);
-        cash += (last * p.qty) / p.leverage;
-      });
-      positions = [];
-      return { liquidated: true, reason: "Maintenance margin breached" };
-    }
-    return { liquidated: false };
+  function closePositionAtMarket(p, reason) {
+    const last = getMarketPrice(p.symbol) || p.entry;
+    const diff = p.side === "long" ? last - p.entry : p.entry - last;
+    const pnl = diff * p.qty * p.leverage;
+    const collateral = (p.entry * p.qty) / p.leverage;
+    cash += collateral + pnl;
+    realizedPnL += pnl;
+    closedTrades += 1;
+    if (pnl > 0) winningTrades += 1;
+    positions = positions.filter((x) => x !== p);
+    return { symbol: p.symbol, price: last, pnl, reason };
   }
 
   function checkRiskExits() {
@@ -150,14 +129,19 @@ const Portfolio = (() => {
       if (last == null) return;
       const hitSL = p.stopLoss != null && (p.side === "long" ? last <= p.stopLoss : last >= p.stopLoss);
       const hitTP = p.takeProfit != null && (p.side === "long" ? last >= p.takeProfit : last <= p.takeProfit);
-      if (hitSL || hitTP) {
-        const pnl = realizeForPosition(p, p.qty, last);
-        cash += (last * p.qty) / p.leverage;
-        positions = positions.filter((x) => x !== p);
-        exits.push({ symbol: p.symbol, reason: hitSL ? "stop-loss" : "take-profit", price: last, pnl });
-      }
+      if (hitSL || hitTP) exits.push(closePositionAtMarket(p, hitSL ? "stop-loss" : "take-profit"));
     });
     return exits;
+  }
+
+  function checkLiquidations() {
+    const equity = computeEquity();
+    const maint = computeMaintMargin();
+    if (positions.length && equity < maint) {
+      const liquidated = positions.slice().map((p) => closePositionAtMarket(p, "liquidation"));
+      return { liquidated: true, reason: "Maintenance margin breached", positions: liquidated };
+    }
+    return { liquidated: false };
   }
 
   function snapshot() {
@@ -175,9 +159,6 @@ const Portfolio = (() => {
     };
   }
 
-  function getBuyingPower() {
-    return Math.max(0, computeEquity() * 2 - computeMarginUsed());
-  }
-
+  function getBuyingPower() { return Math.max(0, computeEquity() * 2 - computeMarginUsed()); }
   return { applyTrade, snapshot, getBuyingPower, checkRiskExits, checkLiquidations };
 })();
