@@ -1,66 +1,62 @@
-// Order handling, history, basic matching
-
+// Order handling, pending-order matching and activity history.
 const Orders = (() => {
-  let orders = []; // history
+  let orders = [];
 
-  function place(order) {
-    const hist = MarketVerse.getHistory(order.symbol);
-    if (!hist.length) {
-      return { ok: false, reason: "No market data" };
-    }
-    const last = hist[hist.length - 1].close;
-
-    let fillPrice = last;
-    if (order.type === "limit" && order.price) {
-      if (order.side === "buy" && order.price >= last) {
-        fillPrice = order.price;
-      } else if (order.side === "sell" && order.price <= last) {
-        fillPrice = order.price;
-      } else {
-        // not filled
-        orders.push({
-          ...order,
-          status: "pending"
-        });
-        return { ok: false, reason: "Limit not reached (simulated)" };
-      }
-    } else if (order.type === "stop" && order.price) {
-      if (order.side === "buy" && last >= order.price) {
-        fillPrice = last;
-      } else if (order.side === "sell" && last <= order.price) {
-        fillPrice = last;
-      } else {
-        orders.push({
-          ...order,
-          status: "pending"
-        });
-        return { ok: false, reason: "Stop not triggered (simulated)" };
-      }
-    }
-
-    const res = Portfolio.applyTrade(order, fillPrice);
-    const status = res.ok ? "filled" : "rejected";
-
+  function record(order, status, fillPrice, reason = null) {
     orders.push({
-      time: new Date().toLocaleTimeString(),
+      id: `${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
       symbol: order.symbol,
       side: order.side,
       type: order.type,
       qty: order.qty,
-      price: fillPrice.toFixed(2),
+      price: fillPrice != null ? Number(fillPrice).toFixed(2) : "—",
       status,
-      reason: res.reason || null
+      reason
     });
-
-    return { ok: res.ok, fee: res.fee, fillPrice };
+    if (orders.length > 50) orders.shift();
   }
 
-  function getOrders() {
-    return orders.slice().reverse();
+  function shouldFill(order, last) {
+    if (order.type === "market") return true;
+    if (!order.price) return false;
+    if (order.type === "limit") return order.side === "buy" ? last <= order.price : last >= order.price;
+    if (order.type === "stop") return order.side === "buy" ? last >= order.price : last <= order.price;
+    return false;
   }
 
-  return {
-    place,
-    getOrders
-  };
+  function place(order) {
+    const hist = MarketVerse.getHistory(order.symbol);
+    if (!hist.length) return { ok: false, reason: "No market data" };
+    const last = hist[hist.length - 1].close;
+    const normalized = {
+      ...order,
+      qty: Number(order.qty),
+      leverage: Math.max(1, Number(order.leverage) || 1),
+      price: order.price != null && Number(order.price) > 0 ? Number(order.price) : null,
+      stopLoss: order.stopLoss != null && Number(order.stopLoss) > 0 ? Number(order.stopLoss) : null,
+      takeProfit: order.takeProfit != null && Number(order.takeProfit) > 0 ? Number(order.takeProfit) : null
+    };
+
+    if (!shouldFill(normalized, last)) {
+      normalized.status = "pending";
+      record(normalized, "pending", null, `${normalized.type} waiting for trigger`);
+      return { ok: false, pending: true, reason: `${normalized.type} waiting for trigger` };
+    }
+
+    const fillPrice = normalized.type === "limit" && normalized.price ? normalized.price : last;
+    const res = Portfolio.applyTrade(normalized, fillPrice);
+    record(normalized, res.ok ? "filled" : "rejected", fillPrice, res.reason || null);
+    return { ok: res.ok, fee: res.fee, fillPrice, action: res.action, pnl: res.pnl };
+  }
+
+  function checkPending() {
+    // Pending orders are intentionally kept simple: this simulation reuses the order history as the visible blotter
+    // and does not expose a mutable open-order book yet.
+  }
+
+  function getOrders() { return orders.slice().reverse(); }
+  function clear() { orders = []; }
+
+  return { place, checkPending, getOrders, clear };
 })();
